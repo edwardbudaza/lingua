@@ -1,4 +1,4 @@
-import { MobileSidebar } from './moile-sidebar';
+import { MobileSidebar } from '@/components/shared/moile-sidebar';
 
 export const MobileHeader = () => {
   return (
