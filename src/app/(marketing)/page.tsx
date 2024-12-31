@@ -10,14 +10,14 @@ import {
 } from '@clerk/nextjs';
 import {
   Loader,
-  Globe2,
+  Rocket,
   Brain,
   Target,
   Users,
-  Award,
+  Stars,
   Sparkles,
-  MessageCircle,
-  BookOpen,
+  MessageSquare,
+  Globe,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -25,51 +25,49 @@ import Link from 'next/link';
 export default function Home() {
   const features = [
     {
-      icon: <Brain className="w-6 h-6 text-blue-500" />,
-      title: 'AI-Powered Learning',
-      description:
-        'Advanced algorithms adapt to your learning style for personalized language acquisition',
+      icon: <Brain className="w-8 h-8 text-indigo-500" />,
+      title: 'Smart & Fun Learning',
+      description: 'Our AI buddy adapts to how you learn best!',
     },
     {
-      icon: <Target className="w-6 h-6 text-green-500" />,
-      title: 'Goal-Oriented Practice',
-      description:
-        'Set and achieve meaningful language goals with structured learning paths',
+      icon: <Target className="w-8 h-8 text-green-500" />,
+      title: 'Level Up Your Skills',
+      description: 'Complete quests and unlock new language powers',
     },
     {
-      icon: <MessageCircle className="w-6 h-6 text-purple-500" />,
-      title: 'Interactive Conversations',
-      description:
-        'Practice real-world conversations with native speakers and AI partners',
+      icon: <MessageSquare className="w-8 h-8 text-sky-500" />,
+      title: 'Practice Adventures',
+      description: 'Chat with friendly natives and AI companions',
     },
     {
-      icon: <Users className="w-6 h-6 text-orange-500" />,
-      title: 'Community Learning',
-      description:
-        'Connect with fellow language learners and practice together',
+      icon: <Users className="w-8 h-8 text-rose-500" />,
+      title: 'Join the Party',
+      description: 'Team up with fellow language explorers',
     },
   ];
 
   return (
-    <div className="w-full min-h-screen">
+    <div className="w-full min-h-screen bg-neutral-50">
       {/* Hero Section */}
-      <section className="max-w-6xl mx-auto py-12 px-4">
+      <section className="max-w-6xl mx-auto pt-12 px-4">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="flex flex-col items-center lg:items-start gap-y-8 lg:max-w-[600px]">
-            <div className="flex items-center gap-2 text-blue-600">
-              <Globe2 className="w-6 h-6" />
-              <span className="font-medium">Welcome to Lingua</span>
+            <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 border-2 border-slate-200">
+              <Globe className="w-5 h-5 text-sky-500 animate-spin-slow" />
+              <span className="font-bold text-slate-600">
+                Welcome to your language adventure!
+              </span>
             </div>
 
-            <h1 className="text-4xl lg:text-5xl font-bold text-neutral-800 text-center lg:text-left">
-              Master New Languages with Confidence and Joy
+            <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-800 text-center lg:text-left">
+              Turn Language Learning into an
+              <span className="text-sky-500"> Awesome Adventure!</span>
             </h1>
 
-            <p className="text-lg text-neutral-600 text-center lg:text-left">
-              Join millions of learners worldwide who are transforming their
-              lives through language learning. Experience our AI-powered
-              platform that makes mastering a new language natural and
-              enjoyable.
+            <p className="text-lg text-slate-600 text-center lg:text-left">
+              Join our squad of language explorers! Learn, play, and level up
+              your language skills with our super-fun AI-powered platform. Ready
+              to begin your quest? 🚀
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
@@ -84,8 +82,8 @@ export default function Home() {
                       variant="secondary"
                       className="w-full sm:w-auto"
                     >
-                      <Sparkles className="w-5 h-5 mr-2" />
-                      Start Learning Free
+                      <Rocket className="w-5 h-5" />
+                      Start Your Adventure
                     </Button>
                   </SignUpButton>
                   <SignInButton mode="modal">
@@ -94,21 +92,21 @@ export default function Home() {
                       variant="primaryOutline"
                       className="w-full sm:w-auto"
                     >
-                      <BookOpen className="w-5 h-5 mr-2" />
-                      Sign In
+                      <Sparkles className="w-5 h-5" />
+                      Return to Quest
                     </Button>
                   </SignInButton>
                 </SignedOut>
                 <SignedIn>
                   <Button
                     size="lg"
-                    variant="secondary"
+                    variant="super"
                     className="w-full sm:w-auto"
                     asChild
                   >
                     <Link href="/learn">
-                      <BookOpen className="w-5 h-5 mr-2" />
-                      Continue Learning
+                      <Stars className="w-5 h-5" />
+                      Continue Adventure
                     </Link>
                   </Button>
                 </SignedIn>
@@ -120,7 +118,7 @@ export default function Home() {
             <Image
               src="/hero.svg"
               fill
-              alt="Language learning illustration"
+              alt="Language learning adventure"
               className="object-contain"
               priority
             />
@@ -129,15 +127,14 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-neutral-50 py-16 px-4">
+      <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-neutral-800 mb-4">
-              Why Choose Lingua?
+            <h2 className="text-3xl font-extrabold text-slate-800 mb-4">
+              Your Learning Superpowers
             </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              Our platform combines cutting-edge technology with proven learning
-              methods to help you achieve fluency faster.
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Unlock amazing abilities on your language learning journey! 🌟
             </p>
           </div>
 
@@ -145,46 +142,60 @@ export default function Home() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl p-6 border-2 border-slate-200 border-b-4 hover:border-b-2 hover:translate-y-[2px] transition-all"
               >
-                <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold text-neutral-800 mb-2">
+                <Button size="icon" className="mb-4">
+                  {feature.icon}
+                </Button>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-neutral-600">{feature.description}</p>
+                <p className="text-slate-600">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Social Proof Section */}
-      <section className="py-16 px-4">
+      {/* Stats Section */}
+      <section className="py-16 px-4 bg-white border-y-2 border-slate-200">
         <div className="max-w-6xl mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-8">
-            <Award className="w-8 h-8 text-yellow-500" />
-            <h2 className="text-3xl font-bold text-neutral-800">
-              Trusted by Language Learners Worldwide
+            <Stars className="w-8 h-8 text-yellow-500" />
+            <h2 className="text-3xl font-extrabold text-slate-800">
+              Join Our League of Language Heroes!
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-center">
-            <div className="flex flex-col items-center">
-              <span className="text-4xl font-bold text-blue-600">1M+</span>
-              <span className="text-neutral-600">Active Users</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-4xl font-bold text-green-600">5+</span>
-              <span className="text-neutral-600">Languages</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-4xl font-bold text-purple-600">4.8/5</span>
-              <span className="text-neutral-600">User Rating</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-4xl font-bold text-orange-600">98%</span>
-              <span className="text-neutral-600">Success Rate</span>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <Button
+              variant="super"
+              className="flex flex-col items-center h-auto py-6"
+            >
+              <span className="text-4xl font-extrabold">1M+</span>
+              <span className="text-sm">Active Explorers</span>
+            </Button>
+            <Button
+              variant="primary"
+              className="flex flex-col items-center h-auto py-6"
+            >
+              <span className="text-4xl font-extrabold">5+</span>
+              <span className="text-sm">Language Quests</span>
+            </Button>
+            <Button
+              variant="secondary"
+              className="flex flex-col items-center h-auto py-6"
+            >
+              <span className="text-4xl font-extrabold">4.8</span>
+              <span className="text-sm">Star Rating</span>
+            </Button>
+            <Button
+              variant="danger"
+              className="flex flex-col items-center h-auto py-6"
+            >
+              <span className="text-4xl font-extrabold">95%</span>
+              <span className="text-sm">Success Rate</span>
+            </Button>
           </div>
         </div>
       </section>
