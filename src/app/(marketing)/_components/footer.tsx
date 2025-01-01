@@ -14,7 +14,7 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="border-t-2 border-slate-200 bg-white pb-4">
+    <footer className="hidden lg:block border-t-2 border-slate-200 bg-white pb-4">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-center gap-2 -mt-4">
           <div className="bg-white px-4 py-2 border-2 border-slate-200 rounded-full">
@@ -22,7 +22,7 @@ export const Footer = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">
+        <div className="grid lg:grid-cols-5 gap-4 mt-6">
           {languages.map((lang) => (
             <Link href={`/learn/${lang.code}`} key={lang.code}>
               <Button
