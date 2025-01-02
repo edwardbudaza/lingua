@@ -1,217 +1,169 @@
-# 📄 API Utilities Documentation
+# Course Progress API Documentation
 
-This document provides a detailed explanation of utility functions used for interacting with the database. These functions leverage **Drizzle ORM**, **Clerk authentication**, and **React's cache** to fetch and normalize data for efficient server-side operations.
+## Overview
 
----
+This module provides a set of cached database query functions for managing user progress, courses, units, lessons, and challenges in a learning management system. The system uses Drizzle ORM for database operations and Clerk for authentication.
 
-## 📋 **Function Overview**
+## Key Features
 
-### 1. `getUserProgress`
+- User progress tracking
+- Course and lesson management
+- Challenge completion status
+- Progress calculation and normalization
 
-Fetches the progress of the currently authenticated user.
+## API Reference
 
-### 2. `getUnits`
+### `getUserProgress()`
 
-Retrieves all units associated with the authenticated user's active course and normalizes lesson data.
+Retrieves the current user's progress including their active course.
 
-### 3. `getCourses`
+**Returns:**
 
-Fetches a list of all available courses from the database.
+- `UserProgress | null`: User progress data with active course information
+- Returns `null` if user is not authenticated
 
-### 4. `getCourseById`
+### `getUnits()`
 
-Fetches a specific course by its ID (future functionality includes populating related units and lessons).
+Retrieves all units for the user's active course with normalized completion data.
 
-## 🔍 **Function Details**
+**Returns:**
 
-### 1. 🚦 **`getUserProgress`**
+- `Unit[]`: Array of units with nested lessons and challenges
+- Each unit includes:
+  - Lesson data
+  - Challenge progress
+  - Normalized completion status for each lesson
 
-```javascript
-export const getUserProgress = cache(async () => {
-  const { userId } = await auth();
+**Implementation Note:**
 
-  if (!userId) {
-    return null;
-  }
+- Requires authenticated user with an active course
+- Returns empty array if conditions aren't met
 
-  const data = await db.query.userProgress.findFirst({
-    where: eq(userProgress.userId, userId),
-    with: {
-      activeCourse: true,
-    },
-  });
+### `getCourses()`
 
-  return data;
-});
+Retrieves all available courses.
+
+**Returns:**
+
+- `Course[]`: Array of all courses in the system
+
+### `getCourseById(courseId: number)`
+
+Retrieves a specific course by ID.
+
+**Parameters:**
+
+- `courseId`: Numeric identifier for the course
+
+**Returns:**
+
+- `Course | null`: Course data if found
+
+**Note:** Currently does not populate units and lessons (marked as TODO)
+
+### `getCourseProgress()`
+
+Calculates and retrieves detailed progress information for the user's active course.
+
+**Returns:**
+
+```typescript
+{
+  activeLesson: Lesson | undefined,
+  activeLessonId: number | undefined
+}
 ```
 
-#### **Purpose:**
+**Implementation Details:**
 
-- Fetches the progress of the currently logged-in user.
-- Includes details of the user's active course, if any.
+- Finds the first uncompleted lesson across all units
+- Orders units and lessons by their respective `order` fields
+- Includes challenge progress for determining completion status
 
-#### **Steps:**
+### `getLesson(id?: number)`
 
-1. Retrieve the authenticated user's ID using **Clerk's `auth` function**.
-2. Return `null` if no `userId` is available (e.g., unauthenticated users).
-3. Query the `userProgress` table for the user's progress:
-   - Filters by `userId`.
-   - Includes the `activeCourse` relationship.
-4. Return the retrieved progress data.
+Retrieves lesson data with challenge information.
 
-#### **Caching:**
+**Parameters:**
 
-- Uses React's `cache` for efficient server-side data reuse.
+- `id` (optional): Specific lesson ID to retrieve
 
----
+**Returns:**
 
-### 2. 📚 **`getUnits`**
+- `Lesson | null`: Lesson data with normalized challenge completion status
+- Includes:
+  - Challenge details
+  - Challenge options
+  - User's progress for each challenge
 
-```javascript
-export const getUnits = cache(async () => {
-  const userProgress = await getUserProgress();
+### `getLessonPercentage()`
 
-  if (!userProgress?.activeCourseId) {
-    return [];
-  }
+Calculates the completion percentage for the current active lesson.
 
-  const data = await db.query.units.findMany({
-    where: eq(units.courseId, userProgress.activeCourseId),
-    with: {
-      lessons: {
-        with: {
-          challenges: {
-            with: {
-              challengeProgress: true,
-            },
-          },
-        },
-      },
-    },
-  });
+**Returns:**
 
-  const normalizedData = data.map((unit) => {
-    const lessonsWithCompletedStatus = unit.lessons.map((lesson) => {
-      const allCompletedChallenges = lesson.challenges.every((challenge) => {
-        return (
-          challenge.challengeProgress &&
-          challenge.challengeProgress.length > 0 &&
-          challenge.challengeProgress.every((progress) => progress.completed)
-        );
-      });
+- `number`: Percentage of completed challenges (0-100)
+- Returns 0 if no active lesson or lesson data is available
 
-      return { ...lesson, completed: allCompletedChallenges };
-    });
+## Data Normalization
 
-    return { ...unit, lessons: lessonsWithCompletedStatus };
-  });
+The API implements several normalization patterns:
 
-  return normalizedData;
-});
-```
+1. **Lesson Completion:**
 
-#### **Purpose:**
+   ```typescript
+   completed = allChallenges.every(
+     (challenge) =>
+       challenge.challengeProgress?.length > 0 &&
+       challenge.challengeProgress.every((progress) => progress.completed)
+   );
+   ```
 
-- Fetches all units for the authenticated user's active course.
-- Normalizes lesson data to include a `completed` status.
+2. **Challenge Completion:**
+   ```typescript
+   completed =
+     challenge.challengeProgress?.length > 0 &&
+     challenge.challengeProgress.every((progress) => progress.completed);
+   ```
 
-#### **Steps:**
+## Performance Considerations
 
-1. Call `getUserProgress` to fetch the current user's progress.
-2. If no `activeCourseId` exists, return an empty array.
-3. Query the `units` table for all units linked to the `activeCourseId`:
-   - Includes nested relationships: `lessons`, `challenges`, and `challengeProgress`.
-4. Normalize the fetched data:
-   - For each lesson, determine whether all challenges are completed.
-   - Add a `completed` flag to each lesson.
-5. Return the normalized data.
+- All functions are wrapped with React's `cache()` to prevent redundant database queries
+- Queries use efficient joins through Drizzle's query builder
+- Nested relationships are handled through the `with` clause for optimal database access
 
-#### **Caching:**
+## Authentication Requirements
 
-- Ensures efficient reuse of the computed units data.
+- Most functions require an authenticated user (via Clerk)
+- Functions return `null` or empty arrays when authentication is missing
+- User ID is consistently checked before database operations
 
----
+## Database Schema Dependencies
 
-### 3. 🏫 **`getCourses`**
+The module interacts with the following tables:
 
-```javascript
-export const getCourses = cache(async () => {
-  const data = await db.query.courses.findMany();
-  return data;
-});
-```
+- `userProgress`
+- `courses`
+- `units`
+- `lessons`
+- `challengeProgress`
+- `challengeOptions`
 
-#### **Purpose:**
+## TODOs and Future Improvements
 
-- Fetches all available courses from the `courses` table.
+1. Verify whether ordering is needed in the `getUnits()` function
+2. Populate units and lessons in `getCourseById()`
+3. Validate completion logic in `getCourseProgress()` and `getLesson()`
 
-#### **Steps:**
+## Usage Example
 
-1. Query the `courses` table using `findMany`.
-2. Return the retrieved list of courses.
+```typescript
+// Get user's current progress
+const progress = await getUserProgress();
 
-#### **Caching:**
+// Get all units for active course with completion status
+const units = await getUnits();
 
-- Caches the list of courses to reduce redundant database calls.
-
----
-
-### 4. 🔍 **`getCourseById`**
-
-```javascript
-export const getCourseById = cache(async (courseId: number) => {
-  const data = await db.query.courses.findFirst({
-    where: eq(courses.id, courseId),
-    // TODO: Populate units and lessons
-  });
-
-  return data;
-});
-```
-
-#### **Purpose:**
-
-- Fetches a specific course by its ID.
-
-#### **Steps:**
-
-1. Accept `courseId` as a parameter.
-2. Query the `courses` table for the specified course ID using `findFirst`.
-   - Currently, additional relationships (units, lessons) are not populated but are planned as part of a future enhancement.
-3. Return the course data.
-
-#### **Caching:**
-
-- Ensures the course details are efficiently fetched and reused.
-
----
-
-## 🎯 **Key Features**
-
-1. **Authentication-Aware Queries**: Functions like `getUserProgress` and `getUnits` are tied to the authenticated user's context.
-2. **Data Normalization**: The `getUnits` function processes and enhances raw database data with computed fields (e.g., lesson completion status).
-3. **Efficient Caching**: React's `cache` optimizes database interactions and minimizes redundant queries.
-4. **Future Extendability**: Functions like `getCourseById` are designed to support enhancements like populating related units and lessons.
-
----
-
-## 🚀 **Potential Enhancements**
-
-1. **Populate Relationships in `getCourseById`:**
-   - Fetch related units, lessons, and challenges to provide comprehensive course details.
-2. **Dynamic User Subscription Status:**
-   - Enhance `getUserProgress` to include subscription-related data (e.g., `hasActiveSubscription`).
-3. **Error Handling:**
-   - Add robust error handling to manage database or authentication failures gracefully.
-
----
-
-## 🔑 **Code Highlights**
-
-- **Type-Safe Queries**: Leveraging **Drizzle ORM**'s type-safe database interaction.
-- **Normalized Data**: Streamlined data structures for lessons and units.
-- **Reusability**: Shared caching mechanisms ensure consistency across different parts of the application.
-
-```
-
+// Calculate lesson completion percentage
+const percentage = await getLessonPercentage();
 ```

@@ -1,250 +1,274 @@
-# 📚 Database Schema Documentation
+# Learning Platform Database Schema Documentation
 
-This document explains the schema of a database designed for a Lingua learning platform. The schema uses **Drizzle ORM** for defining tables and their relationships. Below is a step-by-step breakdown of each table and its relations.
+## Overview
 
----
+This document outlines the database schema for a learning platform implemented using Drizzle ORM with PostgreSQL. The schema supports courses, units, lessons, challenges, and user progress tracking.
 
-## 1. 🎓 Courses Table
+## Schema Diagram
 
-### Definition:
+```mermaid
+erDiagram
+    courses ||--o{ userProgress : "has many"
+    courses ||--o{ units : "contains"
+    units ||--o{ lessons : "contains"
+    lessons ||--o{ challenges : "contains"
+    challenges ||--o{ challengeOptions : "has"
+    challenges ||--o{ challengeProgress : "tracks"
 
-The `courses` table represents the courses available in the platform.
+    courses {
+        serial id PK
+        text title
+        text imageSrc
+    }
 
-### Schema:
+    units {
+        serial id PK
+        text title
+        text description
+        integer courseId FK
+        integer order
+    }
 
-```javascript
-export const courses = pgTable('courses', {
-  id: serial('id').primaryKey(), // Primary key (auto-incrementing)
-  title: text('title').notNull(), // Title of the course (required)
-  imageSrc: text('image_src').notNull(), // URL of the course image (required)
+    lessons {
+        serial id PK
+        text title
+        integer unitId FK
+        integer order
+    }
+
+    challenges {
+        serial id PK
+        integer lessonId FK
+        enum type
+        text question
+        integer order
+    }
+
+    challengeOptions {
+        serial id PK
+        integer challengeId FK
+        text text
+        boolean correct
+        text imageSrc
+        text audioSrc
+    }
+
+    challengeProgress {
+        serial id PK
+        text userId
+        integer challengeId FK
+        boolean completed
+    }
+
+    userProgress {
+        text userId PK
+        text userName
+        text userImageSrc
+        integer activeCourseId FK
+        integer hearts
+        integer points
+    }
+```
+
+## Table Definitions
+
+### `courses`
+
+The top-level entity representing a learning course.
+
+| Column   | Type   | Constraints | Description         |
+| -------- | ------ | ----------- | ------------------- |
+| id       | serial | PRIMARY KEY | Unique identifier   |
+| title    | text   | NOT NULL    | Course title        |
+| imageSrc | text   | NOT NULL    | URL to course image |
+
+**Relations:**
+
+- One-to-many with `userProgress`
+- One-to-many with `units`
+
+### `units`
+
+Organizational blocks within a course.
+
+| Column      | Type    | Constraints  | Description                 |
+| ----------- | ------- | ------------ | --------------------------- |
+| id          | serial  | PRIMARY KEY  | Unique identifier           |
+| title       | text    | NOT NULL     | Unit title                  |
+| description | text    | NOT NULL     | Unit description            |
+| courseId    | integer | NOT NULL, FK | Reference to parent course  |
+| order       | integer | NOT NULL     | Display order within course |
+
+**Relations:**
+
+- Many-to-one with `courses`
+- One-to-many with `lessons`
+
+**Cascade Behavior:**
+
+- Deleted when parent course is deleted
+
+### `lessons`
+
+Individual learning sessions within a unit.
+
+| Column | Type    | Constraints  | Description               |
+| ------ | ------- | ------------ | ------------------------- |
+| id     | serial  | PRIMARY KEY  | Unique identifier         |
+| title  | text    | NOT NULL     | Lesson title              |
+| unitId | integer | NOT NULL, FK | Reference to parent unit  |
+| order  | integer | NOT NULL     | Display order within unit |
+
+**Relations:**
+
+- Many-to-one with `units`
+- One-to-many with `challenges`
+
+**Cascade Behavior:**
+
+- Deleted when parent unit is deleted
+
+### `challenges`
+
+Learning exercises within lessons.
+
+| Column   | Type    | Constraints  | Description                 |
+| -------- | ------- | ------------ | --------------------------- |
+| id       | serial  | PRIMARY KEY  | Unique identifier           |
+| lessonId | integer | NOT NULL, FK | Reference to parent lesson  |
+| type     | enum    | NOT NULL     | Either 'SELECT' or 'ASSIST' |
+| question | text    | NOT NULL     | Challenge question          |
+| order    | integer | NOT NULL     | Display order within lesson |
+
+**Relations:**
+
+- Many-to-one with `lessons`
+- One-to-many with `challengeOptions`
+- One-to-many with `challengeProgress`
+
+**Cascade Behavior:**
+
+- Deleted when parent lesson is deleted
+
+### `challengeOptions`
+
+Possible answers for challenges.
+
+| Column      | Type    | Constraints  | Description                        |
+| ----------- | ------- | ------------ | ---------------------------------- |
+| id          | serial  | PRIMARY KEY  | Unique identifier                  |
+| challengeId | integer | NOT NULL, FK | Reference to parent challenge      |
+| text        | text    | NOT NULL     | Option text                        |
+| correct     | boolean | NOT NULL     | Whether this is the correct answer |
+| imageSrc    | text    | NULLABLE     | Optional image URL                 |
+| audioSrc    | text    | NULLABLE     | Optional audio URL                 |
+
+**Relations:**
+
+- Many-to-one with `challenges`
+
+**Cascade Behavior:**
+
+- Deleted when parent challenge is deleted
+
+### `challengeProgress`
+
+Tracks user progress through challenges.
+
+| Column      | Type    | Constraints             | Description            |
+| ----------- | ------- | ----------------------- | ---------------------- |
+| id          | serial  | PRIMARY KEY             | Unique identifier      |
+| userId      | text    | NOT NULL                | User identifier        |
+| challengeId | integer | NOT NULL, FK            | Reference to challenge |
+| completed   | boolean | NOT NULL, DEFAULT false | Completion status      |
+
+**Relations:**
+
+- Many-to-one with `challenges`
+
+**Cascade Behavior:**
+
+- Deleted when parent challenge is deleted
+
+### `userProgress`
+
+Tracks overall user progress and status.
+
+| Column         | Type    | Constraints                      | Description             |
+| -------------- | ------- | -------------------------------- | ----------------------- |
+| userId         | text    | PRIMARY KEY                      | User identifier         |
+| userName       | text    | NOT NULL, DEFAULT 'User'         | Display name            |
+| userImageSrc   | text    | NOT NULL, DEFAULT '/mascort.svg' | Avatar image URL        |
+| activeCourseId | integer | FK                               | Currently active course |
+| hearts         | integer | NOT NULL, DEFAULT 5              | Lives remaining         |
+| points         | integer | NOT NULL, DEFAULT 0              | Achievement points      |
+
+**Relations:**
+
+- Many-to-one with `courses` (active course)
+
+**Cascade Behavior:**
+
+- Active course reference nullified when referenced course is deleted
+
+## Enums
+
+### `challengesEnum`
+
+Type: `type`
+Values:
+
+- `SELECT`: Multiple choice question
+- `ASSIST`: Assisted learning question
+
+## Design Considerations
+
+1. **Ordering System:**
+
+   - All hierarchical entities (units, lessons, challenges) include an `order` field for explicit sequencing
+   - This allows for flexible reordering without depending on creation timestamps or IDs
+
+2. **Cascade Deletion:**
+
+   - Implemented throughout the schema to maintain referential integrity
+   - Deleting a parent record automatically removes all dependent records
+
+3. **Default Values:**
+
+   - User progress starts with 5 hearts and 0 points
+   - New users get a default name and avatar
+   - Challenge completion defaults to false
+
+4. **Multimedia Support:**
+   - Courses and users have associated images
+   - Challenge options can include both images and audio
+   - All media is referenced via URLs/paths
+
+## Querying Best Practices
+
+1. Always use the established relations when querying related data:
+
+```typescript
+const coursesWithUnits = await db.query.courses.findMany({
+  with: {
+    units: true,
+  },
 });
 ```
 
-### Relationships:
+2. Respect the `order` field when retrieving hierarchical data:
 
-```javascript
-export const coursesRelations = relations(courses, ({ many }) => ({
-  userProgress: many(userProgress), // Links to the progress of users in this course
-  units: many(units), // Links to units in the course
-}));
-```
-
----
-
-## 2. 📦 Units Table
-
-### Definition:
-
-The `units` table represents the units within a course.
-
-### Schema:
-
-```javascript
-export const units = pgTable('units', {
-  id: serial('id').primaryKey(), // Primary key
-  title: text('title').notNull(), // Unit title (required)
-  description: text('description').notNull(), // Unit description (required)
-  courseId: integer('course_id')
-    .references(() => courses.id, { onDelete: 'cascade' }) // Foreign key to `courses`
-    .notNull(),
-  order: integer('order').notNull(), // Display order of the unit
+```typescript
+const orderedLessons = await db.query.lessons.findMany({
+  orderBy: (lessons, { asc }) => [asc(lessons.order)],
 });
 ```
 
-### Relationships:
+3. Use the type enum when creating new challenges:
 
-```javascript
-export const unitsRelations = relations(units, ({ many, one }) => ({
-  course: one(courses, {
-    fields: [units.courseId],
-    references: [courses.id], // Relates to the course
-  }),
-  lesson: many(lessons), // Links to lessons in the unit
-}));
-```
-
----
-
-## 3. 📖 Lessons Table
-
-### Definition:
-
-The `lessons` table represents lessons within a unit.
-
-### Schema:
-
-```javascript
-export const lessons = pgTable('lessons', {
-  id: serial('id').primaryKey(), // Primary key
-  title: text('title').notNull(), // Lesson title (required)
-  unitId: integer('unit_id')
-    .references(() => units.id, { onDelete: 'cascade' }) // Foreign key to `units`
-    .notNull(),
-  order: integer('order').notNull(), // Display order of the lesson
+```typescript
+await db.insert(challenges).values({
+  type: 'SELECT', // or 'ASSIST'
+  // ... other fields
 });
-```
-
-### Relationships:
-
-```javascript
-export const lessonsRelations = relations(lessons, ({ one, many }) => ({
-  unit: one(units, {
-    fields: [lessons.unitId],
-    references: [units.id], // Links to the parent unit
-  }),
-  challenges: many(challenges), // Links to challenges in the lesson
-}));
-```
-
----
-
-## 4. 🏆 Challenges Table
-
-### Definition:
-
-The `challenges` table stores challenges for lessons.
-
-### Schema:
-
-```javascript
-export const challenges = pgTable('challenges', {
-  id: serial('id').primaryKey(), // Primary key
-  lessonId: integer('lesson_id')
-    .references(() => lessons.id, { onDelete: 'cascade' }) // Foreign key to `lessons`
-    .notNull(),
-  type: challengesEnum('type').notNull(), // Enum for challenge type
-  question: text('question').notNull(), // Challenge question (required)
-  order: integer('order').notNull(), // Display order of the challenge
-});
-```
-
-### Relationships:
-
-```javascript
-export const challengesRelations = relations(challenges, ({ one, many }) => ({
-  lesson: one(lessons, {
-    fields: [challenges.lessonId],
-    references: [lessons.id], // Links to the parent lesson
-  }),
-  challengeOptions: many(challengeOptions), // Links to challenge options
-  challengeProgress: many(challengeProgress), // Links to user progress in challenges
-}));
-```
-
----
-
-## 5. 📝 Challenge Options Table
-
-### Definition:
-
-The `challenge_options` table stores possible answers for challenges.
-
-### Schema:
-
-```javascript
-export const challengeOptions = pgTable('challenge_options', {
-  id: serial('id').primaryKey(), // Primary key
-  challengeId: integer('challenge_id')
-    .references(() => challenges.id, { onDelete: 'cascade' }) // Foreign key to `challenges`
-    .notNull(),
-  text: text('text').notNull(), // Option text
-  correct: boolean('correct').notNull(), // Whether the option is correct
-  imageSrc: text('image_src'), // Optional image for the option
-  audioSrc: text('audio_src'), // Optional audio for the option
-});
-```
-
-### Relationships:
-
-```javascript
-export const challengeOptionsRelations = relations(
-  challengeOptions,
-  ({ one }) => ({
-    challenge: one(challenges, {
-      fields: [challengeOptions.challengeId],
-      references: [challenges.id], // Links to the parent challenge
-    }),
-  })
-);
-```
-
----
-
-## 6. 🚀 User Progress Table
-
-### Definition:
-
-The `user_progress` table tracks user progress in courses.
-
-### Schema:
-
-```javascript
-export const userProgress = pgTable('user_progress', {
-  userId: text('user_id').primaryKey(), // Unique user ID
-  userName: text('user_name').notNull().default('User'), // User's name (default: "User")
-  userImageSrc: text('user_image_src').notNull().default('/mascort.svg'), // User's avatar
-  activeCourseId: integer('active_course_id').references(() => courses.id, {
-    onDelete: 'cascade',
-  }), // Active course ID
-  hearts: integer('hearts').notNull().default(5), // Hearts (lives) remaining
-  points: integer('points').notNull().default(0), // Points accumulated
-});
-```
-
-### Relationships:
-
-```javascript
-export const userProgressRelations = relations(userProgress, ({ one }) => ({
-  activeCourse: one(courses, {
-    fields: [userProgress.activeCourseId],
-    references: [courses.id], // Links to the active course
-  }),
-}));
-```
-
----
-
-## 7. 📊 Challenge Progress Table
-
-### Definition:
-
-The `challenge_progress` table tracks users' progress in challenges.
-
-### Schema:
-
-```javascript
-export const challengeProgress = pgTable('challenge_progress', {
-  id: serial('id').primaryKey(), // Primary key
-  userId: text('user_id').notNull(), // User ID
-  challengeId: integer('challenge_id')
-    .references(() => challenges.id, { onDelete: 'cascade' }) // Foreign key to `challenges`
-    .notNull(),
-  completed: boolean('completed').notNull().default(false), // Completion status
-});
-```
-
-### Relationships:
-
-```javascript
-export const challengeProgressRelations = relations(
-  challengeProgress,
-  ({ one }) => ({
-    challenge: one(challenges, {
-      fields: [challengeProgress.challengeId],
-      references: [challenges.id], // Links to the parent challenge
-    }),
-  })
-);
-```
-
----
-
-### 🎯 **Key Notes:**
-
-- All foreign key references use `onDelete: 'cascade'` to ensure referential integrity.
-- Relationships are explicitly defined for clarity and ease of querying.
-- Enum `challengesEnum` is used to define challenge types (`SELECT`, `ASSIST`).
-
-```
-
 ```
