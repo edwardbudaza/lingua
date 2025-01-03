@@ -139,7 +139,7 @@ npm start
 
 - **Framework**: [Next.js](https://nextjs.org/)
 - **Database**: [Drizzle ORM](https://orm.drizzle.team/) with Postgres (Neon)
-- **UI Components**: [Radix UI](https://ui.shadcn.com/)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com/)
 - **Authentication**: [Clerk](https://clerk.dev/)
 - **Styling**: Tailwind CSS
 - **Icons**: Lucid Icons
