@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 type Props = {
-  lessonId?: boolean;
+  lessonId?: number;
   disabled?: boolean;
   status: 'correct' | 'wrong' | 'none' | 'completed';
   onCheck: () => void;
