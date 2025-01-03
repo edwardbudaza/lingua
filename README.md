@@ -1,36 +1,154 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Lingua: Language Learning Platform
+
+Lingua is a modern web application designed to make language learning engaging and interactive. Built with cutting-edge technologies like **Next.js**, **Drizzle ORM**, and **Shadcn UI**, Lingua offers a seamless user experience and is structured to enable scalability and maintainability.
+
+## Table of Contents
+
+1. [Project Overview](#project-overview)
+2. [Features](#features)
+3. [Architecture](#architecture)
+4. [Installation](#installation)
+5. [Getting Started](#getting-started)
+6. [Scripts](#scripts)
+7. [Technologies Used](#technologies-used)
+
+---
+
+## Project Overview
+
+Lingua is structured as a modular **Next.js** application with a focus on maintainable and scalable code. It includes functionalities like:
+
+- **User Onboarding and Authentication** using Clerk.
+- **Course Management**: Create, view, and manage courses with lessons and challenges.
+- **Interactive Learning**: Quizzes, and progress tracking.
+- **Responsive Design**: Optimized for both desktop and mobile.
+
+---
+
+## Features
+
+- **Multi-page Application**: Organized with layouts, nested routes, and reusable components.
+- **Database Integration**: Using Drizzle ORM with a Postgres backend hosted on Neon.
+- **Interactive Components**: Leveraging Shadcn UI and custom reusable components.
+- **State Management**: Context API and custom hooks.
+- **Test and Seed Database**: Seed scripts for initializing test data.
+
+---
+
+## Architecture
+
+The application is built with a **feature-first** architecture, separating concerns into logical directories under the `src` folder:
+
+### Key Directories
+
+- **`src/actions`**: Server-side logic for tracking user and challenge progress.
+- **`src/app`**: Core application pages and layouts, organized by functionality:
+  - **`(main)`**: The main user interface, including courses and learning modules.
+  - **`(marketing)`**: Landing and promotional pages.
+  - **Reusable Layouts**: Shared structure for pages like `layout.tsx`.
+- **`src/components`**: Modular UI components and modal dialogs.
+- **`src/db`**: Drizzle ORM configuration, schema definitions, and queries.
+- **`src/hooks`**: Custom React hooks for shared logic.
+- **`src/lib`**: Utility functions for common operations.
+- **`src/scripts`**: Scripts for database seeding and maintenance.
+- **`src/store`**: Context and state management for modal interactions.
+
+---
+
+## Installation
+
+To run Lingua locally, follow these steps:
+
+### Prerequisites
+
+- **Node.js** (version 18 or higher)
+- **npm** or **yarn**
+- A **Postgres Database** (use Neon for serverless hosting)
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/<your-username>/lingua.git
+cd lingua
+```
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Configure Environment Variables
+
+Create a `.env` file in the root directory and add the following keys:
+
+```env
+DATABASE_URL=your_postgres_database_url
+CLERK_API_KEY=your_clerk_api_key
+NEXT_PUBLIC_CLERK_FRONTEND_API=your_clerk_frontend_api
+```
+
+Replace placeholders with your credentials.
+
+### Initialize the Database
+
+Run the following commands to set up the database schema and seed data:
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+---
 
 ## Getting Started
 
-First, run the development server:
+To start the development server, run:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000) to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build and Start Production
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+To create a production build:
 
-## Learn More
+```bash
+npm run build
+npm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+| Command             | Description                            |
+| ------------------- | -------------------------------------- |
+| `npm run dev`       | Start the development server.          |
+| `npm run build`     | Create a production build.             |
+| `npm start`         | Start the app in production mode.      |
+| `npm run db:studio` | Open Drizzle Studio for schema design. |
+| `npm run db:push`   | Apply database migrations.             |
+| `npm run db:seed`   | Seed the database with test data.      |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Technologies Used
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- **Framework**: [Next.js](https://nextjs.org/)
+- **Database**: [Drizzle ORM](https://orm.drizzle.team/) with Postgres (Neon)
+- **UI Components**: [Radix UI](https://ui.shadcn.com/)
+- **Authentication**: [Clerk](https://clerk.dev/)
+- **Styling**: Tailwind CSS
+- **Icons**: Lucid Icons
+- **State Management**: Zustand and Custom Hooks
+
+---
+
+Feel free to explore the codebase, and don’t hesitate to reach out if you have questions or suggestions. Happy coding!
+
+```
+
+```
